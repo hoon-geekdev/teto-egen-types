@@ -46,22 +46,28 @@
                 <p class="subtitle">당신은 테토형인가요, 에겐형인가요?</p>
             </header>
             
-            <section class="gender-selection">
-                <h2>성별을 선택해주세요</h2>
-                <form id="gender-form" class="gender-form">
-                    <div class="gender-options">
+            <section class="gender-selection" aria-labelledby="gender-heading">
+                <h2 id="gender-heading">성별을 선택해주세요</h2>
+                <form id="gender-form" class="gender-form" novalidate>
+                    <fieldset class="gender-options" role="radiogroup" aria-labelledby="gender-heading" aria-required="true">
+                        <legend class="visually-hidden">성별 선택</legend>
                         <label for="male" class="gender-option">
-                            <input type="radio" id="male" name="gender" value="male" required>
+                            <input type="radio" id="male" name="gender" value="male" required 
+                                   aria-describedby="gender-instruction">
                             <span class="gender-label">남자</span>
                         </label>
                         
                         <label for="female" class="gender-option">
-                            <input type="radio" id="female" name="gender" value="female" required>
+                            <input type="radio" id="female" name="gender" value="female" required 
+                                   aria-describedby="gender-instruction">
                             <span class="gender-label">여자</span>
                         </label>
-                    </div>
+                    </fieldset>
                     
-                    <button type="submit" class="start-btn" disabled>테스트 시작하기</button>
+                    <div id="gender-instruction" class="visually-hidden">성별을 선택한 후 테스트 시작 버튼을 클릭하세요.</div>
+                    <div id="gender-error" class="error-message visually-hidden" role="alert" aria-live="polite"></div>
+                    
+                    <button type="submit" class="start-btn" disabled aria-describedby="gender-error">테스트 시작하기</button>
                 </form>
             </section>
         </main>

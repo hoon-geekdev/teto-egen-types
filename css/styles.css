@@ -169,6 +169,26 @@ body {
     text-rendering: optimizeLegibility;
 }
 
+/* 접근성 유틸리티 */
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.error-message {
+    color: #dc3545;
+    font-size: var(--font-size-sm);
+    margin-top: var(--spacing-xs);
+    font-weight: 500;
+}
+
 /* 앱 컨테이너 */
 #app {
     min-height: 100vh;
@@ -228,6 +248,8 @@ body {
     grid-template-columns: 1fr 1fr;
     gap: var(--spacing-md);
     margin-bottom: var(--spacing-xl);
+    border: none;
+    padding: 0;
 }
 
 .gender-option {
