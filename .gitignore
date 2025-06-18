@@ -21,6 +21,9 @@ node_modules/
 *.sln
 *.sw?
 
+# Cursor MCP configuration (contains API keys)
+.cursor/mcp.json
+
 # OS specific
 .DS_Store
 
