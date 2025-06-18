@@ -24,6 +24,7 @@ class TetoEgenApp {
         
         this.elements = {
             genderForm: document.getElementById('gender-form'),
+            genderError: document.getElementById('gender-error'),
             startBtn: document.querySelector('.start-btn'),
             progressFill: document.querySelector('.progress-fill'),
             progressText: document.querySelector('.progress-text'),
@@ -52,10 +53,16 @@ class TetoEgenApp {
         const genderInputs = document.querySelectorAll('input[name="gender"]');
         genderInputs.forEach(input => {
             input.addEventListener('change', () => this.onGenderChange());
+            
+            // 키보드 접근성 개선
+            input.addEventListener('keydown', (e) => this.handleGenderKeydown(e));
         });
         
         // 테스트 시작 이벤트
         this.elements.genderForm.addEventListener('submit', (e) => this.onStartTest(e));
+        
+        // 폼 유효성 검사를 위한 실시간 이벤트
+        this.elements.genderForm.addEventListener('input', () => this.onFormInput());
         
         // 결과 화면 버튼 이벤트
         this.elements.shareBtn?.addEventListener('click', () => this.shareResult());
@@ -129,6 +136,9 @@ class TetoEgenApp {
             this.selectedGender = selectedGender.value;
             this.elements.startBtn.disabled = false;
             
+            // 성별 선택 시 에러 메시지 숨기기
+            this.hideGenderError();
+            
             // localStorage에 성별 저장 (네임스페이스 사용)
             try {
                 localStorage.setItem('tetoEgen_selectedGender', this.selectedGender);
@@ -142,6 +152,7 @@ class TetoEgenApp {
                 console.warn('성별 선택 저장 실패:', error);
             }
         } else {
+            this.selectedGender = null;
             this.elements.startBtn.disabled = true;
         }
     }
@@ -149,8 +160,14 @@ class TetoEgenApp {
     async onStartTest(e) {
         e.preventDefault();
         
-        if (!this.selectedGender) {
-            this.showError('성별을 선택해주세요.');
+        // 최종 유효성 검사
+        const validation = this.performFinalValidation();
+        if (!validation.isValid) {
+            // 첫 번째 에러 메시지 표시
+            this.showGenderError(validation.errors[0]);
+            
+            // 모든 에러를 콘솔에 로그
+            console.warn('폼 유효성 검사 실패:', validation.errors);
             return;
         }
         
@@ -162,6 +179,34 @@ class TetoEgenApp {
             console.error('테스트 시작 중 오류:', error);
             this.showError('테스트를 시작할 수 없습니다. 잠시 후 다시 시도해주세요.');
         }
+    }
+    
+    validateGenderSelection() {
+        // 현재 선택된 성별 다시 확인
+        const selectedGender = document.querySelector('input[name="gender"]:checked');
+        
+        if (!selectedGender) {
+            this.showGenderError('성별을 선택해주세요.');
+            
+            // 첫 번째 성별 옵션에 포커스
+            const firstGenderOption = document.querySelector('input[name="gender"]');
+            if (firstGenderOption) {
+                firstGenderOption.focus();
+            }
+            
+            return false;
+        }
+        
+        // 추가 유효성 검사
+        if (!selectedGender.value || (selectedGender.value !== 'male' && selectedGender.value !== 'female')) {
+            this.showGenderError('올바른 성별을 선택해주세요.');
+            return false;
+        }
+        
+        // 모든 검사 통과
+        this.selectedGender = selectedGender.value;
+        this.hideGenderError();
+        return true;
     }
     
     async loadData() {
@@ -471,6 +516,137 @@ ${resultData.result.title}
     showError(message) {
         this.elements.errorMessage.textContent = message;
         this.showScreen('error');
+    }
+    
+    // ===== 폼 유효성 검사 메소드들 =====
+    
+    showGenderError(message) {
+        if (this.elements.genderError) {
+            this.elements.genderError.textContent = message;
+            this.elements.genderError.classList.remove('visually-hidden');
+            
+            // ARIA로 스크린 리더에 알림
+            this.elements.genderError.setAttribute('aria-live', 'assertive');
+            
+            // 시각적 피드백을 위한 폼 스타일 변경
+            const genderOptions = document.querySelector('.gender-options');
+            if (genderOptions) {
+                genderOptions.classList.add('has-error');
+            }
+            
+            console.log('성별 선택 에러 표시:', message);
+        }
+    }
+    
+    hideGenderError() {
+        if (this.elements.genderError) {
+            this.elements.genderError.textContent = '';
+            this.elements.genderError.classList.add('visually-hidden');
+            this.elements.genderError.setAttribute('aria-live', 'polite');
+            
+            // 에러 스타일 제거
+            const genderOptions = document.querySelector('.gender-options');
+            if (genderOptions) {
+                genderOptions.classList.remove('has-error');
+            }
+        }
+    }
+    
+    validateForm() {
+        // 전체 폼 유효성 검사 (추후 확장 가능)
+        let isValid = true;
+        
+        // 성별 선택 검사
+        if (!this.validateGenderSelection()) {
+            isValid = false;
+        }
+        
+        return isValid;
+    }
+    
+    // ===== 이벤트 핸들러 메소드들 =====
+    
+    handleGenderKeydown(e) {
+        // 화살표 키로 성별 선택 이동
+        if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+            e.preventDefault();
+            const maleInput = document.getElementById('male');
+            if (maleInput) {
+                maleInput.checked = true;
+                maleInput.focus();
+                this.onGenderChange();
+            }
+        } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+            e.preventDefault();
+            const femaleInput = document.getElementById('female');
+            if (femaleInput) {
+                femaleInput.checked = true;
+                femaleInput.focus();
+                this.onGenderChange();
+            }
+        } else if (e.key === 'Enter' || e.key === ' ') {
+            // 엔터나 스페이스로 선택
+            e.preventDefault();
+            e.target.checked = true;
+            this.onGenderChange();
+            
+            // 선택 후 잠시 후 시작 버튼에 포커스 (UX 개선)
+            setTimeout(() => {
+                if (this.elements.startBtn && !this.elements.startBtn.disabled) {
+                    this.elements.startBtn.focus();
+                }
+            }, 500);
+        }
+    }
+    
+    onFormInput() {
+        // 실시간 폼 유효성 검사
+        const selectedGender = document.querySelector('input[name="gender"]:checked');
+        
+        if (selectedGender) {
+            // 성별이 선택되면 에러 메시지 숨기기
+            this.hideGenderError();
+            
+            // 성공 애니메이션 표시 (선택적)
+            const genderOptions = document.querySelector('.gender-options');
+            if (genderOptions) {
+                genderOptions.classList.remove('has-error');
+                genderOptions.classList.add('success');
+                
+                // 잠시 후 성공 클래스 제거
+                setTimeout(() => {
+                    genderOptions.classList.remove('success');
+                }, 600);
+            }
+        }
+    }
+    
+    // 추가 유효성 검사: 폼 제출 전 최종 검증
+    performFinalValidation() {
+        const errors = [];
+        
+        // 성별 선택 검사
+        const selectedGender = document.querySelector('input[name="gender"]:checked');
+        if (!selectedGender) {
+            errors.push('성별을 선택해주세요.');
+        } else if (!['male', 'female'].includes(selectedGender.value)) {
+            errors.push('올바른 성별을 선택해주세요.');
+        }
+        
+        // 브라우저 호환성 검사
+        if (!window.localStorage) {
+            errors.push('브라우저가 localStorage를 지원하지 않습니다.');
+        }
+        
+        // 네트워크 연결 상태 검사 (가능한 경우)
+        if (navigator.onLine === false) {
+            errors.push('네트워크 연결을 확인해주세요.');
+        }
+        
+        return {
+            isValid: errors.length === 0,
+            errors: errors
+        };
     }
     
     // ===== LocalStorage 관리 메소드들 =====
