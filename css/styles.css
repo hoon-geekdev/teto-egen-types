@@ -166,11 +166,8 @@ body {
 /* 공통 화면 스타일 */
 .screen {
     width: 100%;
-    max-width: 600px;
     margin: 0 auto;
-    padding: var(--spacing-lg);
     background: var(--neutral-white);
-    border-radius: 16px;
     box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
     transition: var(--transition);
 }
@@ -528,41 +525,110 @@ body {
     margin-top: var(--spacing-lg);
 }
 
-/* 반응형 디자인 */
-@media (max-width: 767px) {
+/* 반응형 디자인 - Mobile First Approach */
+
+/* Mobile: 320px - 767px (기본값) */
+.screen {
+    padding: var(--spacing-md);
+    margin: var(--spacing-xs);
+    border-radius: 12px;
+    max-width: 100%;
+}
+
+.gender-options {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-sm);
+}
+
+.gender-option {
+    min-height: 80px;
+    padding: var(--spacing-md);
+}
+
+.percentage-display {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-sm);
+}
+
+.result-actions {
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+/* Tablet: 768px - 1023px */
+@media (min-width: 768px) {
     .screen {
-        padding: var(--spacing-md);
-        margin: var(--spacing-xs);
-        border-radius: 12px;
+        padding: var(--spacing-lg);
+        margin: var(--spacing-md);
+        border-radius: 16px;
+        max-width: 600px;
     }
     
     .gender-options {
-        grid-template-columns: 1fr;
-        gap: var(--spacing-sm);
+        grid-template-columns: 1fr 1fr;
+        gap: var(--spacing-md);
     }
     
     .gender-option {
-        min-height: 80px;
-        padding: var(--spacing-md);
+        min-height: 100px;
+        padding: var(--spacing-lg);
     }
     
     .percentage-display {
-        grid-template-columns: 1fr;
-        gap: var(--spacing-sm);
-    }
-    
-    .result-actions {
-        gap: var(--spacing-sm);
-    }
-}
-
-@media (min-width: 768px) {
-    .screen {
-        padding: var(--spacing-xl);
+        grid-template-columns: 1fr 1fr;
+        gap: var(--spacing-md);
     }
     
     .result-actions {
         flex-direction: row;
+        gap: var(--spacing-md);
+    }
+    
+    .welcome-header h1 {
+        font-size: 2.25rem;
+    }
+    
+    .question-text {
+        font-size: 1.375rem;
+    }
+}
+
+/* Desktop: 1024px+ */
+@media (min-width: 1024px) {
+    .screen {
+        padding: var(--spacing-xl);
+        margin: var(--spacing-lg);
+        max-width: 700px;
+    }
+    
+    .gender-option {
+        min-height: 120px;
+        padding: var(--spacing-xl);
+    }
+    
+    .welcome-header h1 {
+        font-size: 2.5rem;
+    }
+    
+    .question-text {
+        font-size: 1.5rem;
+    }
+    
+    .option-btn {
+        min-height: 64px;
+        font-size: 1.125rem;
+    }
+}
+
+/* Extra Large Screens: 1440px+ */
+@media (min-width: 1440px) {
+    .screen {
+        max-width: 800px;
+        padding: calc(var(--spacing-xl) * 1.5);
+    }
+    
+    .welcome-header h1 {
+        font-size: 3rem;
     }
 }
 
