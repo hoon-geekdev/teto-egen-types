@@ -139,6 +139,11 @@ table {
     --spacing-lg: 2rem;
     --spacing-xl: 3rem;
     
+    /* 터치 타겟 크기 */
+    --touch-target-min: 48px;
+    --touch-target-comfort: 56px;
+    --touch-target-large: 64px;
+    
     /* 브레이크포인트 */
     --mobile: 320px;
     --tablet: 768px;
@@ -282,7 +287,7 @@ body {
     font-family: var(--font-family);
     cursor: pointer;
     transition: var(--transition);
-    min-height: 48px;
+    min-height: var(--touch-target-min);
 }
 
 .start-btn {
@@ -357,7 +362,7 @@ body {
     text-align: left;
     cursor: pointer;
     transition: var(--transition);
-    min-height: 60px;
+    min-height: var(--touch-target-min); /* WCAG 최소 터치 타겟 */
     display: flex;
     align-items: center;
 }
@@ -611,7 +616,7 @@ body {
     }
     
     .option-btn {
-        min-height: 64px;
+        min-height: var(--touch-target-large);
     }
 }
 
@@ -645,14 +650,42 @@ body {
     }
 }
 
-/* 터치 친화적 버튼 크기 확보 */
+/* 터치 친화적 버튼 크기 확보 - WCAG AA 지침 준수 */
 @media (pointer: coarse) {
+    /* 최소 터치 타겟: 44x44px (WCAG 2.1) */
     .gender-option,
     .option-btn,
     .start-btn,
     .share-btn,
     .restart-btn,
     .retry-btn {
-        min-height: 48px;
+        min-height: var(--touch-target-min);
+        min-width: var(--touch-target-min);
+        padding: max(var(--spacing-sm), 8px);
+    }
+    
+    /* 라디오 버튼 영역 확장 */
+    .gender-option {
+        min-height: calc(var(--touch-target-min) * 1.8);
+        padding: var(--spacing-lg);
+    }
+    
+    /* 질문 옵션 버튼 확장 */
+    .option-btn {
+        min-height: var(--touch-target-comfort);
+        padding: var(--spacing-md) var(--spacing-lg);
+    }
+    
+    /* 터치 영역 간 최소 간격 확보 */
+    .gender-options {
+        gap: max(var(--spacing-sm), 8px);
+    }
+    
+    .question-options {
+        gap: max(var(--spacing-md), 12px);
+    }
+    
+    .result-actions {
+        gap: max(var(--spacing-md), 12px);
     }
 } 
