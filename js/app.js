@@ -1,10 +1,262 @@
 // 테토/에겐 성격 유형 테스트 앱
-class TetoEgenApp {
+
+// ===== QuestionManager 클래스 =====
+class QuestionManager {
     constructor() {
-        this.currentQuestionIndex = 0;
-        this.answers = [];
         this.questions = [];
         this.results = [];
+        this.selectedQuestions = [];
+        this.currentQuestionIndex = 0;
+        this.answers = [];
+        this.gender = null;
+    }
+    
+    // 질문 및 결과 데이터 로드
+    async loadData() {
+        try {
+            // 질문 데이터 로드
+            const questionsResponse = await fetch('data/questions.json');
+            if (!questionsResponse.ok) {
+                throw new Error('질문 데이터를 불러올 수 없습니다.');
+            }
+            const questionsData = await questionsResponse.json();
+            
+            // 결과 데이터 로드
+            const resultsResponse = await fetch('data/results.json');
+            if (!resultsResponse.ok) {
+                throw new Error('결과 데이터를 불러올 수 없습니다.');
+            }
+            const resultsData = await resultsResponse.json();
+            
+            this.questions = questionsData;
+            this.results = resultsData;
+            
+            console.log('QuestionManager 데이터 로딩 완료:', {
+                questions: this.questions.length,
+                results: this.results.length
+            });
+            
+            return { questions: this.questions, results: this.results };
+            
+        } catch (error) {
+            console.error('QuestionManager 데이터 로딩 오류:', error);
+            throw error;
+        }
+    }
+    
+    // 성별 설정
+    setGender(gender) {
+        if (!['male', 'female'].includes(gender)) {
+            throw new Error('유효하지 않은 성별입니다.');
+        }
+        this.gender = gender;
+        console.log(`QuestionManager 성별 설정: ${gender}`);
+    }
+    
+    // 테토/에겐 균형을 고려한 랜덤 질문 선택
+    selectRandomQuestions(count = 10) {
+        if (!this.gender) {
+            throw new Error('성별이 설정되지 않았습니다.');
+        }
+        
+        // 성별에 맞는 질문 필터링
+        const availableQuestions = this.questions.filter(q => 
+            q[this.gender] && q[this.gender].options && q[this.gender].options.length > 0
+        );
+        
+        if (availableQuestions.length < count) {
+            console.warn(`요청된 질문 수(${count})보다 사용 가능한 질문이 적습니다(${availableQuestions.length})`);
+        }
+        
+        // 테토/에겐 균형 알고리즘 구현
+        const balancedQuestions = this.getBalancedQuestions(availableQuestions, count);
+        
+        this.selectedQuestions = balancedQuestions;
+        this.currentQuestionIndex = 0;
+        this.answers = [];
+        
+        console.log(`QuestionManager: ${this.selectedQuestions.length}개 질문 선택 완료`);
+        return this.selectedQuestions;
+    }
+    
+    // 테토/에겐 균형을 맞춘 질문 선택 알고리즘
+    getBalancedQuestions(availableQuestions, count) {
+        // 각 질문의 테토/에겐 태그 분포 분석
+        const questionsWithBalance = availableQuestions.map(question => {
+            const genderData = question[this.gender];
+            let tetoCount = 0;
+            let egenCount = 0;
+            
+            genderData.options.forEach(option => {
+                if (option.tag === '테토') tetoCount++;
+                else if (option.tag === '에겐') egenCount++;
+            });
+            
+            return {
+                ...question,
+                tetoCount,
+                egenCount,
+                balance: Math.abs(tetoCount - egenCount) // 균형도 (0에 가까울수록 균형잡힘)
+            };
+        });
+        
+        // 균형잡힌 질문을 우선시하면서 랜덤 선택
+        const shuffled = questionsWithBalance
+            .sort((a, b) => {
+                // 균형도가 같으면 랜덤, 다르면 균형도 우선
+                if (a.balance === b.balance) {
+                    return 0.5 - Math.random();
+                }
+                return a.balance - b.balance;
+            });
+        
+        return shuffled.slice(0, count);
+    }
+    
+    // 현재 질문 정보 반환
+    getCurrentQuestion() {
+        if (this.currentQuestionIndex >= this.selectedQuestions.length) {
+            return null;
+        }
+        
+        const question = this.selectedQuestions[this.currentQuestionIndex];
+        const genderData = question[this.gender];
+        
+        return {
+            question: question,
+            genderData: genderData,
+            index: this.currentQuestionIndex,
+            total: this.selectedQuestions.length,
+            progress: ((this.currentQuestionIndex + 1) / this.selectedQuestions.length) * 100
+        };
+    }
+    
+    // 답변 저장 및 다음 질문으로 이동
+    submitAnswer(optionIndex, option) {
+        if (this.currentQuestionIndex >= this.selectedQuestions.length) {
+            throw new Error('더 이상 답변할 질문이 없습니다.');
+        }
+        
+        const currentQuestion = this.selectedQuestions[this.currentQuestionIndex];
+        
+        // 답변 데이터 구조
+        const answer = {
+            questionId: currentQuestion.id,
+            questionIndex: this.currentQuestionIndex,
+            optionIndex: optionIndex,
+            tag: option.tag,
+            text: option.text,
+            timestamp: new Date().toISOString()
+        };
+        
+        this.answers.push(answer);
+        this.currentQuestionIndex++;
+        
+        console.log(`QuestionManager: 답변 저장 (${this.currentQuestionIndex}/${this.selectedQuestions.length})`);
+        
+        return {
+            isComplete: this.currentQuestionIndex >= this.selectedQuestions.length,
+            progress: this.currentQuestionIndex / this.selectedQuestions.length,
+            nextQuestion: this.getCurrentQuestion()
+        };
+    }
+    
+    // 테스트 완료 여부 확인
+    isTestComplete() {
+        return this.currentQuestionIndex >= this.selectedQuestions.length;
+    }
+    
+    // 결과 계산
+    calculateResults() {
+        if (!this.isTestComplete()) {
+            throw new Error('테스트가 완료되지 않았습니다.');
+        }
+        
+        // 테토/에겐 태그 카운트
+        let tetoCount = 0;
+        let egenCount = 0;
+        
+        this.answers.forEach(answer => {
+            if (answer.tag === '테토') {
+                tetoCount++;
+            } else if (answer.tag === '에겐') {
+                egenCount++;
+            }
+        });
+        
+        const totalAnswers = this.answers.length;
+        const tetoPercentage = Math.round((tetoCount / totalAnswers) * 100);
+        const egenPercentage = Math.round((egenCount / totalAnswers) * 100);
+        
+        // 결과 매칭
+        const matchingResult = this.findMatchingResult(tetoPercentage);
+        
+        const results = {
+            tetoCount,
+            egenCount,
+            tetoPercentage,
+            egenPercentage,
+            totalAnswers,
+            result: matchingResult,
+            answers: this.answers,
+            gender: this.gender,
+            timestamp: new Date().toISOString()
+        };
+        
+        console.log('QuestionManager 결과 계산 완료:', results);
+        return results;
+    }
+    
+    // 결과 범위에 맞는 결과 찾기
+    findMatchingResult(tetoPercentage) {
+        const matchingResult = this.results.find(result => {
+            const [min, max] = result.range;
+            return tetoPercentage >= min && tetoPercentage <= max;
+        });
+        
+        return matchingResult || this.results[0]; // 기본값 반환
+    }
+    
+    // 답변 데이터 반환
+    getAnswers() {
+        return [...this.answers]; // 복사본 반환
+    }
+    
+    // 선택된 질문들 반환
+    getSelectedQuestions() {
+        return [...this.selectedQuestions]; // 복사본 반환
+    }
+    
+    // 진행 상황 복원
+    restoreProgress(savedAnswers, currentIndex) {
+        try {
+            this.answers = savedAnswers || [];
+            this.currentQuestionIndex = currentIndex || 0;
+            
+            console.log(`QuestionManager: 진행 상황 복원 (${this.currentQuestionIndex}/${this.selectedQuestions.length})`);
+            return true;
+        } catch (error) {
+            console.error('QuestionManager 진행 상황 복원 실패:', error);
+            return false;
+        }
+    }
+    
+    // QuestionManager 상태 초기화
+    reset() {
+        this.selectedQuestions = [];
+        this.currentQuestionIndex = 0;
+        this.answers = [];
+        this.gender = null;
+        console.log('QuestionManager 상태 초기화 완료');
+    }
+}
+
+class TetoEgenApp {
+    constructor() {
+        // QuestionManager 인스턴스 생성
+        this.questionManager = new QuestionManager();
+        
+        // 앱 상태 관리
         this.selectedGender = null;
         
         this.init();
@@ -114,12 +366,16 @@ class TetoEgenApp {
     
     restoreIncompleteTest(savedAnswers, progress) {
         try {
-            this.answers = JSON.parse(savedAnswers);
-            this.currentQuestionIndex = progress.current;
-            
             // 데이터 로드 후 질문 재개
             this.loadData().then(() => {
-                this.selectRandomQuestions();
+                // QuestionManager 설정 및 진행 상황 복원
+                this.questionManager.setGender(this.selectedGender);
+                this.questionManager.selectRandomQuestions(10);
+                
+                // 저장된 답변으로 진행 상황 복원
+                const answers = JSON.parse(savedAnswers);
+                this.questionManager.restoreProgress(answers, progress.current);
+                
                 this.showScreen('question');
                 this.displayCurrentQuestion();
             });
@@ -211,27 +467,9 @@ class TetoEgenApp {
     
     async loadData() {
         try {
-            // 질문 데이터 로드
-            const questionsResponse = await fetch('data/questions.json');
-            if (!questionsResponse.ok) {
-                throw new Error('질문 데이터를 불러올 수 없습니다.');
-            }
-            const questionsData = await questionsResponse.json();
-            
-            // 결과 데이터 로드
-            const resultsResponse = await fetch('data/results.json');
-            if (!resultsResponse.ok) {
-                throw new Error('결과 데이터를 불러올 수 없습니다.');
-            }
-            const resultsData = await resultsResponse.json();
-            
-            this.questions = questionsData;
-            this.results = resultsData;
-            
-            console.log('데이터 로딩 완료:', {
-                questions: this.questions.length,
-                results: this.results.length
-            });
+            // QuestionManager를 통한 데이터 로드
+            await this.questionManager.loadData();
+            console.log('TetoEgenApp: QuestionManager를 통한 데이터 로딩 완료');
             
         } catch (error) {
             console.error('데이터 로딩 오류:', error);
@@ -240,102 +478,100 @@ class TetoEgenApp {
     }
     
     startQuestions() {
-        // 성별에 맞는 질문 10개 랜덤 선택
-        this.selectRandomQuestions();
-        
-        // 답변 배열 초기화
-        this.answers = [];
-        this.currentQuestionIndex = 0;
-        
-        // 질문 화면으로 전환
-        this.showScreen('question');
-        this.displayCurrentQuestion();
-    }
-    
-    selectRandomQuestions() {
-        // 전체 질문에서 10개 랜덤 선택 (테토/에겐 균형 고려)
-        const availableQuestions = this.questions.filter(q => 
-            q[this.selectedGender] && q[this.selectedGender].options
-        );
-        
-        // 간단한 랜덤 선택 (향후 균형 알고리즘으로 개선)
-        const shuffled = availableQuestions.sort(() => 0.5 - Math.random());
-        this.selectedQuestions = shuffled.slice(0, 10);
-        
-        console.log('선택된 질문:', this.selectedQuestions.length + '개');
+        try {
+            // QuestionManager에 성별 설정
+            this.questionManager.setGender(this.selectedGender);
+            
+            // 성별에 맞는 질문 10개 랜덤 선택
+            this.questionManager.selectRandomQuestions(10);
+            
+            // 질문 화면으로 전환
+            this.showScreen('question');
+            this.displayCurrentQuestion();
+            
+        } catch (error) {
+            console.error('질문 시작 중 오류:', error);
+            this.showError('질문을 시작할 수 없습니다. 다시 시도해주세요.');
+        }
     }
     
     displayCurrentQuestion() {
-        if (this.currentQuestionIndex >= this.selectedQuestions.length) {
+        // QuestionManager에서 현재 질문 정보 가져오기
+        const questionInfo = this.questionManager.getCurrentQuestion();
+        
+        if (!questionInfo) {
+            // 모든 질문이 완료됨
             this.calculateResults();
             return;
         }
         
-        const question = this.selectedQuestions[this.currentQuestionIndex];
-        const genderData = question[this.selectedGender];
+        const { genderData, index, total, progress } = questionInfo;
         
         // 진행률 업데이트
-        const progress = ((this.currentQuestionIndex + 1) / this.selectedQuestions.length) * 100;
         this.elements.progressFill.style.width = `${progress}%`;
-        this.elements.progressText.textContent = `${this.currentQuestionIndex + 1} / ${this.selectedQuestions.length}`;
+        this.elements.progressText.textContent = `${index + 1} / ${total}`;
         
         // 질문 텍스트 표시
         this.elements.questionText.textContent = genderData.text;
         
         // 선택지 생성
         this.elements.questionOptions.innerHTML = '';
-        genderData.options.forEach((option, index) => {
+        genderData.options.forEach((option, optionIndex) => {
             const button = document.createElement('button');
             button.className = 'option-btn';
             button.textContent = option.text;
-            button.addEventListener('click', () => this.selectAnswer(option, index));
+            button.addEventListener('click', () => this.selectAnswer(option, optionIndex));
             
             this.elements.questionOptions.appendChild(button);
         });
     }
     
     selectAnswer(option, optionIndex) {
-        // 답변 저장
-        this.answers.push({
-            questionId: this.selectedQuestions[this.currentQuestionIndex].id,
-            questionIndex: this.currentQuestionIndex,
-            optionIndex: optionIndex,
-            tag: option.tag,
-            text: option.text,
-            timestamp: new Date().toISOString()
-        });
-        
-        // 다음 질문으로
-        this.currentQuestionIndex++;
-        
-        // localStorage에 진행 상황 저장
-        this.saveTestProgress();
-        
-        // 선택된 버튼에 시각적 피드백
-        const selectedButton = event.target;
-        selectedButton.classList.add('selected');
-        
-        // 약간의 지연 후 다음 질문 표시 (UX 개선)
-        setTimeout(() => {
-            this.displayCurrentQuestion();
-        }, 600);
+        try {
+            // QuestionManager에 답변 제출
+            const result = this.questionManager.submitAnswer(optionIndex, option);
+            
+            // localStorage에 진행 상황 저장
+            this.saveTestProgress();
+            
+            // 선택된 버튼에 시각적 피드백
+            const selectedButton = event.target;
+            selectedButton.classList.add('selected');
+            
+            // 약간의 지연 후 다음 질문 표시 또는 결과 계산 (UX 개선)
+            setTimeout(() => {
+                if (result.isComplete) {
+                    this.calculateResults();
+                } else {
+                    this.displayCurrentQuestion();
+                }
+            }, 600);
+            
+        } catch (error) {
+            console.error('답변 처리 중 오류:', error);
+            this.showError('답변 처리 중 오류가 발생했습니다. 다시 시도해주세요.');
+        }
     }
     
     saveTestProgress() {
         try {
+            // QuestionManager에서 답변 및 진행 상황 가져오기
+            const answers = this.questionManager.getAnswers();
+            const selectedQuestions = this.questionManager.getSelectedQuestions();
+            
             // 답변 저장 (네임스페이스 사용)
-            localStorage.setItem('tetoEgen_testAnswers', JSON.stringify(this.answers));
+            localStorage.setItem('tetoEgen_testAnswers', JSON.stringify(answers));
             
             // 진행 상황 저장
             const progressData = {
-                current: this.currentQuestionIndex,
-                total: this.selectedQuestions.length,
+                current: answers.length,
+                total: selectedQuestions.length,
                 timestamp: new Date().toISOString(),
                 gender: this.selectedGender
             };
             localStorage.setItem('tetoEgen_testProgress', JSON.stringify(progressData));
             
-            console.log(`테스트 진행 상황 저장: ${this.currentQuestionIndex}/${this.selectedQuestions.length}`);
+            console.log(`테스트 진행 상황 저장: ${answers.length}/${selectedQuestions.length}`);
             
         } catch (error) {
             console.warn('테스트 진행 상황 저장 실패:', error);
@@ -345,43 +581,24 @@ class TetoEgenApp {
     }
     
     calculateResults() {
-        console.log('결과 계산 중...', this.answers);
-        
-        // 테토/에겐 태그 카운트
-        let tetoCount = 0;
-        let egenCount = 0;
-        
-        this.answers.forEach(answer => {
-            if (answer.tag === '테토') {
-                tetoCount++;
-            } else if (answer.tag === '에겐') {
-                egenCount++;
-            }
-        });
-        
-        const totalAnswers = this.answers.length;
-        const tetoPercentage = Math.round((tetoCount / totalAnswers) * 100);
-        const egenPercentage = Math.round((egenCount / totalAnswers) * 100);
-        
-        console.log('계산 결과:', { tetoCount, egenCount, tetoPercentage, egenPercentage });
-        
-        // 결과 매칭
-        const result = this.findMatchingResult(tetoPercentage);
-        
-        this.displayResults(tetoPercentage, egenPercentage, result);
+        try {
+            console.log('결과 계산 중...');
+            
+            // QuestionManager를 통해 결과 계산
+            const results = this.questionManager.calculateResults();
+            
+            console.log('계산 결과:', results);
+            
+            // 결과 화면 표시
+            this.displayResults(results.tetoPercentage, results.egenPercentage, results.result, results);
+            
+        } catch (error) {
+            console.error('결과 계산 중 오류:', error);
+            this.showError('결과 계산 중 오류가 발생했습니다. 다시 시도해주세요.');
+        }
     }
     
-    findMatchingResult(tetoPercentage) {
-        // 결과 범위에 맞는 결과 찾기
-        const matchingResult = this.results.find(result => {
-            const [min, max] = result.range;
-            return tetoPercentage >= min && tetoPercentage <= max;
-        });
-        
-        return matchingResult || this.results[0]; // 기본값 반환
-    }
-    
-    displayResults(tetoPercentage, egenPercentage, result) {
+    displayResults(tetoPercentage, egenPercentage, result, fullResults = null) {
         // 결과 화면으로 전환
         this.showScreen('result');
         
@@ -405,12 +622,12 @@ class TetoEgenApp {
         document.body.className = `result-${dominantType}`;
         
         // 결과 저장 (네임스페이스 사용)
-        const resultData = {
+        const resultData = fullResults || {
             tetoPercentage,
             egenPercentage,
             result,
             timestamp: new Date().toISOString(),
-            answers: this.answers,
+            answers: this.questionManager.getAnswers(),
             gender: this.selectedGender
         };
         
@@ -475,10 +692,8 @@ ${resultData.result.title}
     }
     
     restartTest() {
-        // 데이터 초기화
-        this.currentQuestionIndex = 0;
-        this.answers = [];
-        this.selectedQuestions = [];
+        // QuestionManager 상태 초기화
+        this.questionManager.reset();
         
         // localStorage에서 테스트 관련 데이터 정리 (성별 선택은 유지)
         this.clearTestData();
