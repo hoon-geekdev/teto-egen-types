@@ -64,22 +64,62 @@ class TetoEgenApp {
     }
     
     checkSavedData() {
-        // localStorage에서 이전 데이터 확인
-        const savedGender = localStorage.getItem('selectedGender');
-        const savedAnswers = localStorage.getItem('testAnswers');
-        
-        if (savedGender) {
-            this.selectedGender = savedGender;
-            const genderInput = document.querySelector(`input[value="${savedGender}"]`);
-            if (genderInput) {
-                genderInput.checked = true;
-                this.onGenderChange();
+        try {
+            // localStorage에서 이전 데이터 확인
+            const savedGender = localStorage.getItem('tetoEgen_selectedGender');
+            const savedAnswers = localStorage.getItem('tetoEgen_testAnswers');
+            const savedProgress = localStorage.getItem('tetoEgen_testProgress');
+            
+            if (savedGender) {
+                this.selectedGender = savedGender;
+                const genderInput = document.querySelector(`input[value="${savedGender}"]`);
+                if (genderInput) {
+                    genderInput.checked = true;
+                    this.onGenderChange();
+                    console.log(`저장된 성별 선택 복원: ${savedGender}`);
+                }
             }
+            
+            // 미완료된 테스트가 있다면 복구 옵션 제공
+            if (savedAnswers && savedProgress) {
+                console.log('이전 테스트 데이터가 발견되었습니다.');
+                this.showIncompleteTestDialog(savedAnswers, savedProgress);
+            }
+        } catch (error) {
+            console.warn('저장된 데이터 복원 중 오류:', error);
+            this.clearSavedData();
         }
+    }
+    
+    showIncompleteTestDialog(savedAnswers, savedProgress) {
+        const progress = JSON.parse(savedProgress);
+        const shouldRestore = confirm(
+            `미완료된 테스트가 있습니다. (${progress.current}/${progress.total} 문항 완료)\n` +
+            '계속 진행하시겠습니까?'
+        );
         
-        // 미완료된 테스트가 있다면 복구 옵션 제공 (추후 구현)
-        if (savedAnswers) {
-            console.log('이전 테스트 데이터가 발견되었습니다.');
+        if (shouldRestore) {
+            this.restoreIncompleteTest(savedAnswers, progress);
+        } else {
+            this.clearTestData();
+        }
+    }
+    
+    restoreIncompleteTest(savedAnswers, progress) {
+        try {
+            this.answers = JSON.parse(savedAnswers);
+            this.currentQuestionIndex = progress.current;
+            
+            // 데이터 로드 후 질문 재개
+            this.loadData().then(() => {
+                this.selectRandomQuestions();
+                this.showScreen('question');
+                this.displayCurrentQuestion();
+            });
+        } catch (error) {
+            console.error('테스트 복원 중 오류:', error);
+            this.clearTestData();
+            this.showError('테스트 복원에 실패했습니다. 새로 시작해주세요.');
         }
     }
     
@@ -89,8 +129,18 @@ class TetoEgenApp {
             this.selectedGender = selectedGender.value;
             this.elements.startBtn.disabled = false;
             
-            // localStorage에 성별 저장
-            localStorage.setItem('selectedGender', this.selectedGender);
+            // localStorage에 성별 저장 (네임스페이스 사용)
+            try {
+                localStorage.setItem('tetoEgen_selectedGender', this.selectedGender);
+                
+                // 타임스탬프도 함께 저장하여 유효성 관리
+                const timestamp = new Date().toISOString();
+                localStorage.setItem('tetoEgen_genderTimestamp', timestamp);
+                
+                console.log(`성별 선택 저장됨: ${this.selectedGender}`);
+            } catch (error) {
+                console.warn('성별 선택 저장 실패:', error);
+            }
         } else {
             this.elements.startBtn.disabled = true;
         }
@@ -206,19 +256,47 @@ class TetoEgenApp {
             questionIndex: this.currentQuestionIndex,
             optionIndex: optionIndex,
             tag: option.tag,
-            text: option.text
+            text: option.text,
+            timestamp: new Date().toISOString()
         });
-        
-        // localStorage에 답변 저장
-        localStorage.setItem('testAnswers', JSON.stringify(this.answers));
         
         // 다음 질문으로
         this.currentQuestionIndex++;
         
+        // localStorage에 진행 상황 저장
+        this.saveTestProgress();
+        
+        // 선택된 버튼에 시각적 피드백
+        const selectedButton = event.target;
+        selectedButton.classList.add('selected');
+        
         // 약간의 지연 후 다음 질문 표시 (UX 개선)
         setTimeout(() => {
             this.displayCurrentQuestion();
-        }, 300);
+        }, 600);
+    }
+    
+    saveTestProgress() {
+        try {
+            // 답변 저장 (네임스페이스 사용)
+            localStorage.setItem('tetoEgen_testAnswers', JSON.stringify(this.answers));
+            
+            // 진행 상황 저장
+            const progressData = {
+                current: this.currentQuestionIndex,
+                total: this.selectedQuestions.length,
+                timestamp: new Date().toISOString(),
+                gender: this.selectedGender
+            };
+            localStorage.setItem('tetoEgen_testProgress', JSON.stringify(progressData));
+            
+            console.log(`테스트 진행 상황 저장: ${this.currentQuestionIndex}/${this.selectedQuestions.length}`);
+            
+        } catch (error) {
+            console.warn('테스트 진행 상황 저장 실패:', error);
+            // LocalStorage 용량 초과 등의 경우 이전 데이터 정리
+            this.clearOldData();
+        }
     }
     
     calculateResults() {
@@ -281,22 +359,36 @@ class TetoEgenApp {
         const dominantType = tetoPercentage > egenPercentage ? 'teto' : 'egen';
         document.body.className = `result-${dominantType}`;
         
-        // 결과 저장
+        // 결과 저장 (네임스페이스 사용)
         const resultData = {
             tetoPercentage,
             egenPercentage,
             result,
             timestamp: new Date().toISOString(),
-            answers: this.answers
+            answers: this.answers,
+            gender: this.selectedGender
         };
-        localStorage.setItem('lastTestResult', JSON.stringify(resultData));
+        
+        try {
+            localStorage.setItem('tetoEgen_lastTestResult', JSON.stringify(resultData));
+            
+            // 테스트 완료 후 진행 상황 데이터 정리
+            this.clearTestData();
+            
+            console.log('테스트 결과 저장 완료');
+        } catch (error) {
+            console.warn('결과 저장 실패:', error);
+        }
         
         console.log('결과 표시 완료:', resultData);
     }
     
     shareResult() {
-        const resultData = JSON.parse(localStorage.getItem('lastTestResult'));
-        if (!resultData) return;
+        const resultData = JSON.parse(localStorage.getItem('tetoEgen_lastTestResult'));
+        if (!resultData) {
+            console.warn('공유할 결과 데이터가 없습니다.');
+            return;
+        }
         
         const shareText = `테토/에겐 성격 유형 테스트 결과
 테토: ${resultData.tetoPercentage}% | 에겐: ${resultData.egenPercentage}%
@@ -343,9 +435,8 @@ ${resultData.result.title}
         this.answers = [];
         this.selectedQuestions = [];
         
-        // localStorage 정리
-        localStorage.removeItem('testAnswers');
-        localStorage.removeItem('lastTestResult');
+        // localStorage에서 테스트 관련 데이터 정리 (성별 선택은 유지)
+        this.clearTestData();
         
         // 클래스 제거
         document.body.className = '';
@@ -380,6 +471,100 @@ ${resultData.result.title}
     showError(message) {
         this.elements.errorMessage.textContent = message;
         this.showScreen('error');
+    }
+    
+    // ===== LocalStorage 관리 메소드들 =====
+    
+    clearTestData() {
+        // 테스트 진행 상황과 결과만 정리 (성별 선택은 유지)
+        try {
+            localStorage.removeItem('tetoEgen_testAnswers');
+            localStorage.removeItem('tetoEgen_testProgress');
+            console.log('테스트 데이터 정리 완료');
+        } catch (error) {
+            console.warn('테스트 데이터 정리 실패:', error);
+        }
+    }
+    
+    clearSavedData() {
+        // 모든 앱 관련 데이터 정리
+        try {
+            const keysToRemove = [
+                'tetoEgen_selectedGender',
+                'tetoEgen_genderTimestamp',
+                'tetoEgen_testAnswers',
+                'tetoEgen_testProgress',
+                'tetoEgen_lastTestResult'
+            ];
+            
+            keysToRemove.forEach(key => {
+                localStorage.removeItem(key);
+            });
+            
+            console.log('모든 저장된 데이터 정리 완료');
+        } catch (error) {
+            console.warn('데이터 정리 실패:', error);
+        }
+    }
+    
+    clearOldData() {
+        // 용량 부족 등의 경우 오래된 데이터 정리
+        try {
+            const now = new Date().getTime();
+            const sevenDaysAgo = now - (7 * 24 * 60 * 60 * 1000); // 7일
+            
+            // 오래된 결과 데이터 확인 및 정리
+            const lastResult = localStorage.getItem('tetoEgen_lastTestResult');
+            if (lastResult) {
+                const resultData = JSON.parse(lastResult);
+                const resultTime = new Date(resultData.timestamp).getTime();
+                
+                if (resultTime < sevenDaysAgo) {
+                    localStorage.removeItem('tetoEgen_lastTestResult');
+                    console.log('오래된 결과 데이터 정리됨');
+                }
+            }
+            
+            // 성별 선택 타임스탬프 확인
+            const genderTimestamp = localStorage.getItem('tetoEgen_genderTimestamp');
+            if (genderTimestamp) {
+                const genderTime = new Date(genderTimestamp).getTime();
+                const thirtyDaysAgo = now - (30 * 24 * 60 * 60 * 1000); // 30일
+                
+                if (genderTime < thirtyDaysAgo) {
+                    localStorage.removeItem('tetoEgen_selectedGender');
+                    localStorage.removeItem('tetoEgen_genderTimestamp');
+                    console.log('오래된 성별 선택 데이터 정리됨');
+                }
+            }
+            
+        } catch (error) {
+            console.warn('오래된 데이터 정리 실패:', error);
+            // 최후의 수단으로 모든 데이터 정리
+            this.clearSavedData();
+        }
+    }
+    
+    getStorageInfo() {
+        // LocalStorage 사용량 정보 (디버깅 용도)
+        try {
+            const keys = ['tetoEgen_selectedGender', 'tetoEgen_testAnswers', 'tetoEgen_testProgress', 'tetoEgen_lastTestResult'];
+            const info = {};
+            
+            keys.forEach(key => {
+                const value = localStorage.getItem(key);
+                info[key] = {
+                    exists: !!value,
+                    size: value ? value.length : 0
+                };
+            });
+            
+            console.log('LocalStorage 사용 현황:', info);
+            return info;
+        } catch (error) {
+            console.warn('Storage 정보 조회 실패:', error);
+            return {};
+        }
     }
 }
 
