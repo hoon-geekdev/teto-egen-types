@@ -1,0 +1,501 @@
+/* CSS Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* CSS Custom Properties (Variables) */
+:root {
+    /* 테토 색상 (레드 계열) */
+    --teto-primary: #FF4757;
+    --teto-secondary: #FF6B7A;
+    --teto-light: #FFB3BA;
+    --teto-dark: #E63946;
+    
+    /* 에겐 색상 (블루 계열) */
+    --egen-primary: #3742FA;
+    --egen-secondary: #5352ED;
+    --egen-light: #A8B2FF;
+    --egen-dark: #2F3A8F;
+    
+    /* 중성 색상 */
+    --neutral-white: #FFFFFF;
+    --neutral-light: #F8F9FA;
+    --neutral-gray: #E9ECEF;
+    --neutral-dark: #495057;
+    --neutral-black: #212529;
+    
+    /* 폰트 */
+    --font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    
+    /* 간격 */
+    --spacing-xs: 0.5rem;
+    --spacing-sm: 1rem;
+    --spacing-md: 1.5rem;
+    --spacing-lg: 2rem;
+    --spacing-xl: 3rem;
+    
+    /* 브레이크포인트 */
+    --mobile: 320px;
+    --tablet: 768px;
+    --desktop: 1024px;
+    
+    /* 애니메이션 */
+    --transition: 0.3s ease;
+    --transition-fast: 0.2s ease;
+}
+
+/* 기본 스타일 */
+body {
+    font-family: var(--font-family);
+    line-height: 1.6;
+    color: var(--neutral-dark);
+    background-color: var(--neutral-light);
+    font-size: 16px;
+    overflow-x: hidden;
+}
+
+/* 앱 컨테이너 */
+#app {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-sm);
+}
+
+/* 공통 화면 스타일 */
+.screen {
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+    padding: var(--spacing-lg);
+    background: var(--neutral-white);
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+    transition: var(--transition);
+}
+
+.screen.hidden {
+    display: none;
+}
+
+/* 헤더 스타일 */
+.welcome-header {
+    text-align: center;
+    margin-bottom: var(--spacing-xl);
+}
+
+.welcome-header h1 {
+    font-size: clamp(1.5rem, 5vw, 2.5rem);
+    font-weight: 700;
+    color: var(--neutral-black);
+    margin-bottom: var(--spacing-sm);
+    background: linear-gradient(45deg, var(--teto-primary), var(--egen-primary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.subtitle {
+    font-size: 1.125rem;
+    color: var(--neutral-dark);
+    font-weight: 400;
+}
+
+/* 성별 선택 */
+.gender-selection h2 {
+    text-align: center;
+    margin-bottom: var(--spacing-lg);
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--neutral-black);
+}
+
+.gender-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-xl);
+}
+
+.gender-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: var(--spacing-lg);
+    border: 2px solid var(--neutral-gray);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: var(--transition);
+    background: var(--neutral-white);
+    min-height: 120px;
+    justify-content: center;
+}
+
+.gender-option:hover {
+    border-color: var(--neutral-dark);
+    transform: translateY(-2px);
+}
+
+.gender-option input[type="radio"] {
+    display: none;
+}
+
+.gender-option input[type="radio"]:checked + .gender-label {
+    color: var(--neutral-white);
+}
+
+.gender-option input[type="radio"]:checked ~ * {
+    color: var(--neutral-white);
+}
+
+.gender-option:has(input[type="radio"]:checked) {
+    background: linear-gradient(135deg, var(--teto-primary), var(--egen-primary));
+    border-color: transparent;
+    color: var(--neutral-white);
+}
+
+.gender-label {
+    font-size: 1.125rem;
+    font-weight: 600;
+    transition: var(--transition);
+}
+
+/* 버튼 스타일 */
+.start-btn,
+.share-btn,
+.restart-btn,
+.retry-btn {
+    width: 100%;
+    padding: var(--spacing-md) var(--spacing-lg);
+    border: none;
+    border-radius: 12px;
+    font-size: 1.125rem;
+    font-weight: 600;
+    font-family: var(--font-family);
+    cursor: pointer;
+    transition: var(--transition);
+    min-height: 48px;
+}
+
+.start-btn {
+    background: linear-gradient(135deg, var(--teto-primary), var(--egen-primary));
+    color: var(--neutral-white);
+}
+
+.start-btn:disabled {
+    background: var(--neutral-gray);
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.start-btn:not(:disabled):hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+/* 진행률 표시 */
+.progress-container {
+    margin-bottom: var(--spacing-xl);
+    text-align: center;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: var(--neutral-gray);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: var(--spacing-sm);
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--teto-primary), var(--egen-primary));
+    border-radius: 4px;
+    transition: width var(--transition);
+    width: 0%;
+}
+
+.progress-text {
+    font-size: 0.875rem;
+    color: var(--neutral-dark);
+    font-weight: 500;
+}
+
+/* 질문 화면 */
+.question-text {
+    font-size: 1.25rem;
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: var(--spacing-xl);
+    line-height: 1.5;
+    color: var(--neutral-black);
+}
+
+.question-options {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.option-btn {
+    width: 100%;
+    padding: var(--spacing-md);
+    background: var(--neutral-white);
+    border: 2px solid var(--neutral-gray);
+    border-radius: 12px;
+    font-size: 1rem;
+    font-family: var(--font-family);
+    text-align: left;
+    cursor: pointer;
+    transition: var(--transition);
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+}
+
+.option-btn:hover {
+    border-color: var(--neutral-dark);
+    transform: translateY(-1px);
+}
+
+/* 로딩 스피너 */
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid var(--neutral-gray);
+    border-top: 4px solid var(--teto-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto var(--spacing-md);
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* 결과 화면 */
+.result-header {
+    text-align: center;
+    margin-bottom: var(--spacing-xl);
+}
+
+.result-header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--neutral-black);
+}
+
+.percentage-display {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+    text-align: center;
+}
+
+.teto-percentage,
+.egen-percentage {
+    padding: var(--spacing-md);
+    border-radius: 12px;
+    background: var(--neutral-light);
+}
+
+.teto-percentage {
+    border-left: 4px solid var(--teto-primary);
+}
+
+.egen-percentage {
+    border-left: 4px solid var(--egen-primary);
+}
+
+.type-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--neutral-dark);
+    margin-bottom: var(--spacing-xs);
+}
+
+.percentage-value {
+    display: block;
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.teto-percentage .percentage-value {
+    color: var(--teto-primary);
+}
+
+.egen-percentage .percentage-value {
+    color: var(--egen-primary);
+}
+
+/* 결과 시각화 */
+.progress-bars {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-lg);
+}
+
+.teto-bar,
+.egen-bar {
+    height: 20px;
+    background: var(--neutral-gray);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.bar-fill {
+    height: 100%;
+    border-radius: 10px;
+    transition: width 1s ease;
+    width: 0%;
+}
+
+.teto-fill {
+    background: var(--teto-primary);
+}
+
+.egen-fill {
+    background: var(--egen-primary);
+}
+
+/* 결과 콘텐츠 */
+.result-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: var(--spacing-md);
+    color: var(--neutral-black);
+}
+
+.result-description {
+    font-size: 1rem;
+    line-height: 1.6;
+    text-align: center;
+    margin-bottom: var(--spacing-lg);
+    color: var(--neutral-dark);
+}
+
+.result-advice {
+    background: var(--neutral-light);
+    padding: var(--spacing-md);
+    border-radius: 8px;
+    margin-bottom: var(--spacing-xl);
+    border-left: 4px solid var(--teto-primary);
+}
+
+/* 결과 액션 */
+.result-actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.share-btn {
+    background: var(--teto-primary);
+    color: var(--neutral-white);
+}
+
+.restart-btn {
+    background: var(--neutral-gray);
+    color: var(--neutral-dark);
+}
+
+.share-btn:hover,
+.restart-btn:hover {
+    transform: translateY(-2px);
+}
+
+/* 에러 화면 */
+.error-container {
+    text-align: center;
+    padding: var(--spacing-xl);
+}
+
+.error-container h2 {
+    color: var(--teto-primary);
+    margin-bottom: var(--spacing-md);
+}
+
+.retry-btn {
+    background: var(--egen-primary);
+    color: var(--neutral-white);
+    margin-top: var(--spacing-lg);
+}
+
+/* 반응형 디자인 */
+@media (max-width: 767px) {
+    .screen {
+        padding: var(--spacing-md);
+        margin: var(--spacing-xs);
+        border-radius: 12px;
+    }
+    
+    .gender-options {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-sm);
+    }
+    
+    .gender-option {
+        min-height: 80px;
+        padding: var(--spacing-md);
+    }
+    
+    .percentage-display {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-sm);
+    }
+    
+    .result-actions {
+        gap: var(--spacing-sm);
+    }
+}
+
+@media (min-width: 768px) {
+    .screen {
+        padding: var(--spacing-xl);
+    }
+    
+    .result-actions {
+        flex-direction: row;
+    }
+}
+
+/* 접근성 개선 */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* 다크모드 지원 (향후 확장) */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --neutral-light: #1a1a1a;
+        --neutral-white: #2d2d2d;
+        --neutral-gray: #404040;
+        --neutral-dark: #e0e0e0;
+        --neutral-black: #ffffff;
+    }
+}
+
+/* 터치 친화적 버튼 크기 확보 */
+@media (pointer: coarse) {
+    .gender-option,
+    .option-btn,
+    .start-btn,
+    .share-btn,
+    .restart-btn,
+    .retry-btn {
+        min-height: 48px;
+    }
+} 

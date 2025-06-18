@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="테토/에겐 성격 유형 테스트 - 당신은 테토형인가요, 에겐형인가요?">
+    <meta name="keywords" content="성격테스트, 테토, 에겐, 심리테스트, 성향분석">
+    <meta name="author" content="테토에겐 테스트">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="">
+    <meta property="og:title" content="테토/에겐 성격 유형 테스트">
+    <meta property="og:description" content="당신은 테토형인가요, 에겐형인가요? 간단한 질문으로 알아보는 성격 유형 테스트">
+    <meta property="og:image" content="">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="">
+    <meta property="twitter:title" content="테토/에겐 성격 유형 테스트">
+    <meta property="twitter:description" content="당신은 테토형인가요, 에겐형인가요? 간단한 질문으로 알아보는 성격 유형 테스트">
+    <meta property="twitter:image" content="">
+
+    <title>테토/에겐 성격 유형 테스트</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div id="app">
+        <!-- 로딩 화면 -->
+        <div id="loading-screen" class="screen hidden">
+            <div class="loading-spinner"></div>
+            <p>테스트를 준비하고 있습니다...</p>
+        </div>
+
+        <!-- 메인 시작 화면 -->
+        <main id="welcome-screen" class="screen">
+            <header class="welcome-header">
+                <h1>테토/에겐 성격 유형 테스트</h1>
+                <p class="subtitle">당신은 테토형인가요, 에겐형인가요?</p>
+            </header>
+            
+            <section class="gender-selection">
+                <h2>성별을 선택해주세요</h2>
+                <form id="gender-form" class="gender-form">
+                    <div class="gender-options">
+                        <label for="male" class="gender-option">
+                            <input type="radio" id="male" name="gender" value="male" required>
+                            <span class="gender-label">남자</span>
+                        </label>
+                        
+                        <label for="female" class="gender-option">
+                            <input type="radio" id="female" name="gender" value="female" required>
+                            <span class="gender-label">여자</span>
+                        </label>
+                    </div>
+                    
+                    <button type="submit" class="start-btn" disabled>테스트 시작하기</button>
+                </form>
+            </section>
+        </main>
+
+        <!-- 질문 화면 -->
+        <main id="question-screen" class="screen hidden">
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-fill"></div>
+                </div>
+                <span class="progress-text">1 / 10</span>
+            </div>
+            
+            <section class="question-container">
+                <h2 id="question-text" class="question-text"></h2>
+                
+                <div id="question-options" class="question-options">
+                    <!-- 동적으로 생성될 선택지들 -->
+                </div>
+            </section>
+        </main>
+
+        <!-- 결과 화면 -->
+        <main id="result-screen" class="screen hidden">
+            <header class="result-header">
+                <h1>테스트 결과</h1>
+            </header>
+            
+            <section class="result-container">
+                <div class="result-chart">
+                    <div class="percentage-display">
+                        <div class="teto-percentage">
+                            <span class="type-label">테토</span>
+                            <span class="percentage-value" id="teto-percentage">0%</span>
+                        </div>
+                        <div class="egen-percentage">
+                            <span class="type-label">에겐</span>
+                            <span class="percentage-value" id="egen-percentage">0%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="result-visualization">
+                        <div class="progress-bars">
+                            <div class="teto-bar">
+                                <div class="bar-fill teto-fill"></div>
+                            </div>
+                            <div class="egen-bar">
+                                <div class="bar-fill egen-fill"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="result-content">
+                    <h2 id="result-title" class="result-title"></h2>
+                    <p id="result-description" class="result-description"></p>
+                    <div id="result-advice" class="result-advice"></div>
+                </div>
+                
+                <div class="result-actions">
+                    <button id="share-btn" class="share-btn">결과 공유하기</button>
+                    <button id="restart-btn" class="restart-btn">다시 테스트하기</button>
+                </div>
+            </section>
+        </main>
+
+        <!-- 에러 화면 -->
+        <div id="error-screen" class="screen hidden">
+            <div class="error-container">
+                <h2>오류가 발생했습니다</h2>
+                <p id="error-message">잠시 후 다시 시도해주세요.</p>
+                <button id="retry-btn" class="retry-btn">다시 시도</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/app.js"></script>
+</body>
+</html> 

@@ -1,0 +1,109 @@
+{
+	"meta": {
+		"generatedAt": "2025-06-18T08:05:24.311Z",
+		"tasksAnalyzed": 12,
+		"totalTasks": 12,
+		"analysisCount": 12,
+		"thresholdScore": 5,
+		"projectName": "Taskmaster",
+		"usedResearch": true
+	},
+	"complexityAnalysis": [
+		{
+			"taskId": 1,
+			"taskTitle": "Project Setup and Repository Structure",
+			"complexityScore": 4,
+			"recommendedSubtasks": 5,
+			"expansionPrompt": "Break down the project setup into initializing the repository, creating the folder structure, setting up HTML5 boilerplate, configuring GitHub Pages, and adding CDN links for fonts.",
+			"reasoning": "This task involves multiple distinct steps, including repository initialization, folder structuring, HTML setup, GitHub Pages configuration, and font integration. Each step is straightforward but requires attention to detail, making the overall complexity moderate."
+		},
+		{
+			"taskId": 2,
+			"taskTitle": "Base CSS Framework and Responsive Design",
+			"complexityScore": 6,
+			"recommendedSubtasks": 6,
+			"expansionPrompt": "Divide the CSS framework implementation into setting up CSS Grid and Flexbox layouts, defining color themes with custom properties, implementing responsive breakpoints, applying fluid typography, adding CSS reset/normalize, and ensuring touch-friendly button sizes.",
+			"reasoning": "Implementing a responsive design with a CSS framework involves multiple interrelated components, such as layout systems, color themes, and responsive breakpoints. Each component requires careful planning and testing to ensure compatibility and accessibility, contributing to a higher complexity."
+		},
+		{
+			"taskId": 3,
+			"taskTitle": "JSON Data Structure Implementation",
+			"complexityScore": 5,
+			"recommendedSubtasks": 4,
+			"expansionPrompt": "Break down the JSON data structure implementation into designing the schema for questions.json, populating questions.json with gender-specific questions, creating the schema for results.json, and populating results.json with result types and Korean text content.",
+			"reasoning": "Creating and populating structured JSON files requires defining schemas, ensuring data validity, and handling character encoding. While each step is manageable, the need for accuracy and validation adds to the task's complexity."
+		},
+		{
+			"taskId": 4,
+			"taskTitle": "Gender Selection UI Component",
+			"complexityScore": 4,
+			"recommendedSubtasks": 5,
+			"expansionPrompt": "Divide the gender selection UI component into designing the interface with radio buttons or cards, implementing semantic HTML with ARIA attributes, adding CSS animations for transitions, storing selection in localStorage, and adding form validation.",
+			"reasoning": "Building a UI component involves both design and functionality aspects, including user interface design, accessibility considerations, state management, and validation. Each aspect is relatively simple but requires careful implementation to ensure a seamless user experience."
+		},
+		{
+			"taskId": 5,
+			"taskTitle": "Question Display and Navigation System",
+			"complexityScore": 7,
+			"recommendedSubtasks": 6,
+			"expansionPrompt": "Break down the question display and navigation system into creating the QuestionManager class, implementing random question selection with balance, loading questions.json using fetch API, creating a progress bar component, implementing single-choice selection with progression, and storing answers in localStorage.",
+			"reasoning": "This task involves developing a system to manage question flow, including randomization, progress tracking, and answer collection. The need to balance question types and ensure smooth navigation adds to the complexity, requiring careful design and testing."
+		},
+		{
+			"taskId": 6,
+			"taskTitle": "Answer Collection and State Management",
+			"complexityScore": 5,
+			"recommendedSubtasks": 4,
+			"expansionPrompt": "Divide the answer collection and state management into implementing the AnswerManager class with save, get, and clear methods, using localStorage with JSON serialization, adding data validation for answer format, and implementing error handling for storage issues.",
+			"reasoning": "Managing user answers involves implementing storage mechanisms, ensuring data integrity, and handling potential errors. While each component is straightforward, the need for robust error handling and validation increases the task's complexity."
+		},
+		{
+			"taskId": 7,
+			"taskTitle": "Score Calculation and Result Matching Logic",
+			"complexityScore": 6,
+			"recommendedSubtasks": 5,
+			"expansionPrompt": "Break down the score calculation and result matching logic into creating the ScoreCalculator class with calculatePercentages method, counting 'teto' and 'egen' tagged answers, calculating percentages, implementing result matching algorithm, and handling edge cases.",
+			"reasoning": "Developing a scoring algorithm requires accurate calculation of percentages, matching results based on predefined ranges, and handling edge cases. The need for precision and thorough testing contributes to the task's complexity."
+		},
+		{
+			"taskId": 8,
+			"taskTitle": "Results Display Screen",
+			"complexityScore": 5,
+			"recommendedSubtasks": 4,
+			"expansionPrompt": "Divide the results display screen into designing the layout with percentage visualization, displaying result title, description, and advice, implementing animated percentage bars or indicators, and adding color theming based on dominant type.",
+			"reasoning": "Creating a results display involves designing a user-friendly interface, implementing animations, and applying dynamic theming. While each aspect is manageable, the combination requires attention to detail and testing to ensure a cohesive user experience."
+		},
+		{
+			"taskId": 9,
+			"taskTitle": "Social Sharing Integration",
+			"complexityScore": 4,
+			"recommendedSubtasks": 5,
+			"expansionPrompt": "Break down the social sharing integration into adding Web Share API for native sharing, implementing custom share buttons as fallback, generating shareable text with result summary, adding Open Graph meta tags for social previews, and implementing copy-to-clipboard functionality for result URL.",
+			"reasoning": "Integrating social sharing features involves implementing APIs, creating shareable content, and ensuring compatibility across platforms. Each component is relatively simple but requires testing to ensure functionality and user engagement."
+		},
+		{
+			"taskId": 10,
+			"taskTitle": "Error Handling and Loading States",
+			"complexityScore": 6,
+			"recommendedSubtasks": 5,
+			"expansionPrompt": "Divide the error handling and loading states into adding loading spinners for data fetching, implementing error boundaries for JavaScript errors, creating fallback UI for network failures, adding retry mechanisms for failed requests, and implementing graceful degradation for localStorage unavailability.",
+			"reasoning": "Implementing comprehensive error handling and loading states requires anticipating various failure scenarios, providing user feedback, and ensuring application resilience. The need to cover multiple edge cases and provide a seamless user experience adds to the task's complexity."
+		},
+		{
+			"taskId": 11,
+			"taskTitle": "SEO Optimization and Meta Tags",
+			"complexityScore": 5,
+			"recommendedSubtasks": 4,
+			"expansionPrompt": "Break down the SEO optimization and meta tags into adding comprehensive meta tags (title, description, keywords, Open Graph, Twitter Cards), implementing JSON-LD structured data for personality test schema, adding canonical URLs and proper heading hierarchy, and optimizing images with proper alt tags.",
+			"reasoning": "Optimizing a website for search engines involves adding meta tags, structured data, and ensuring proper content hierarchy. While each step is straightforward, the need to adhere to SEO best practices and validate implementations increases the task's complexity."
+		},
+		{
+			"taskId": 12,
+			"taskTitle": "Performance Optimization and Final Testing",
+			"complexityScore": 7,
+			"recommendedSubtasks": 6,
+			"expansionPrompt": "Divide the performance optimization and final testing into minifying CSS and JavaScript files, optimizing images and implementing WebP format with fallbacks, adding service worker for basic caching, implementing critical CSS inlining, testing on major browsers and devices, and validating accessibility with tools.",
+			"reasoning": "Optimizing performance and conducting final testing involves multiple tasks, including code minification, image optimization, caching strategies, and cross-browser testing. The need to ensure high performance and compatibility across various platforms contributes to the task's complexity."
+		}
+	]
+}
